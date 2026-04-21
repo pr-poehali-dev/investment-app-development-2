@@ -5,7 +5,7 @@ type Page = "home" | "deposits" | "support";
 
 export default function Index() {
   const [page, setPage] = useState<Page>("home");
-  const [calcAmount, setCalcAmount] = useState(500000);
+  const [calcAmount, setCalcAmount] = useState(1000);
   const [calcMonths, setCalcMonths] = useState(12);
   const [selectedDeposit, setSelectedDeposit] = useState(1);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
@@ -16,30 +16,30 @@ export default function Index() {
     {
       id: 0,
       name: "Старт",
-      rate: 14.5,
-      minAmount: 10000,
+      rate: 8,
+      minAmount: 100,
       term: "3–6 мес",
       color: "from-blue-500/20 to-blue-600/10",
       accent: "#3b82f6",
-      features: ["Ежемесячные выплаты", "Частичное снятие", "Без капитализации"],
+      features: ["Ежемесячные выплаты", "Частичное снятие", "TRC-20 / ERC-20"],
       badge: null,
     },
     {
       id: 1,
       name: "Максимум",
-      rate: 18.2,
-      minAmount: 50000,
+      rate: 15,
+      minAmount: 500,
       term: "12–24 мес",
       color: "from-emerald-500/20 to-emerald-600/10",
       accent: "#00e5a0",
-      features: ["Капитализация процентов", "Пролонгация авто", "Повышенная ставка"],
+      features: ["Капитализация процентов", "Автопролонгация", "TRC-20 / ERC-20"],
       badge: "Популярный",
     },
     {
       id: 2,
       name: "Премиум",
-      rate: 21.0,
-      minAmount: 500000,
+      rate: 22,
+      minAmount: 5000,
       term: "6–36 мес",
       color: "from-purple-500/20 to-purple-600/10",
       accent: "#a855f7",
@@ -49,16 +49,16 @@ export default function Index() {
   ];
 
   const faqItems = [
-    { q: "Как открыть вклад онлайн?", a: "Выберите вклад, заполните заявку и загрузите паспорт. Счёт откроется в течение 5 минут без визита в офис." },
-    { q: "Застрахованы ли мои деньги?", a: "Да, вклады застрахованы государством на сумму до 1 400 000 рублей в рамках системы АСВ." },
+    { q: "Как пополнить вклад в USDT?", a: "Выберите вклад, получите адрес кошелька (TRC-20 или ERC-20) и переведите нужную сумму. Зачисление — в течение 10 минут." },
+    { q: "Как выводить проценты?", a: "Проценты выводятся на любой USDT-кошелёк: TRC-20 (Tron) или ERC-20 (Ethereum) — по вашему выбору." },
+    { q: "Безопасно ли хранить USDT у вас?", a: "Да. Средства хранятся в холодных кошельках с мультиподписью. Выплаты гарантированы смарт-контрактом." },
     { q: "Можно ли пополнять вклад?", a: "Вклады «Максимум» и «Премиум» поддерживают пополнение в любое время на протяжении всего срока." },
-    { q: "Что будет при досрочном закрытии?", a: "При досрочном закрытии выплачивается процент по ставке «до востребования» (0.1% годовых)." },
-    { q: "Как получить выплату процентов?", a: "Проценты начисляются ежемесячно или в конце срока — на карту или на счёт вклада (капитализация)." },
+    { q: "Что будет при досрочном закрытии?", a: "При досрочном закрытии выплачивается тело вклада за вычетом 2% — начисленные проценты сгорают." },
   ];
 
   const selectedRate = deposits[selectedDeposit].rate;
-  const income = Math.round((calcAmount * selectedRate / 100) * (calcMonths / 12));
-  const total = calcAmount + income;
+  const income = parseFloat(((calcAmount * selectedRate / 100) * (calcMonths / 12)).toFixed(2));
+  const total = parseFloat((calcAmount + income).toFixed(2));
 
   const navItems: { id: Page; label: string; icon: string }[] = [
     { id: "home", label: "Главная", icon: "Home" },
@@ -98,7 +98,7 @@ export default function Index() {
               <div className="relative animate-fade-in">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card text-xs text-emerald-400 font-medium mb-4">
                   <Icon name="Sparkles" size={12} />
-                  До 21% годовых — лучшие условия 2026
+                  До 22% годовых в USDT — лучшие условия 2026
                 </div>
 
                 <h1 className="font-display text-4xl font-black text-white leading-tight mb-3">
@@ -106,7 +106,7 @@ export default function Index() {
                   <span className="neon-text">работают</span> за вас
                 </h1>
                 <p className="text-muted-foreground text-base leading-relaxed mb-6">
-                  Откройте вклад за 5 минут онлайн. Надёжно, выгодно, без скрытых комиссий.
+                  Вклады в USDT — стабильный доход в криптовалюте. Без рисков волатильности, без скрытых комиссий.
                 </p>
 
                 <div className="flex gap-3">
@@ -130,9 +130,9 @@ export default function Index() {
             <section className="px-4 py-6">
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: "21%", label: "Макс. ставка", icon: "Percent" },
-                  { value: "1.4М", label: "Страховка АСВ", icon: "Shield" },
-                  { value: "5 мин", label: "Открытие", icon: "Zap" },
+                  { value: "22%", label: "Макс. ставка", icon: "Percent" },
+                  { value: "USDT", label: "Стабильная монета", icon: "Shield" },
+                  { value: "10 мин", label: "Зачисление", icon: "Zap" },
                 ].map((stat, i) => (
                   <div key={i} className="glass-card rounded-2xl p-4 flex flex-col items-center text-center">
                     <div className="w-8 h-8 rounded-xl bg-emerald-500/15 flex items-center justify-center mb-2">
@@ -152,9 +152,9 @@ export default function Index() {
                 <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-400 text-black text-xs font-bold">
                   Популярный
                 </div>
-                <div className="font-display text-5xl font-black neon-text mb-1">18.2%</div>
+                <div className="font-display text-5xl font-black neon-text mb-1">15%</div>
                 <div className="text-white font-semibold text-lg mb-1">Вклад «Максимум»</div>
-                <div className="text-muted-foreground text-sm mb-4">от 50 000 ₽ · 12–24 месяца · Капитализация</div>
+                <div className="text-muted-foreground text-sm mb-4">от 500 USDT · 12–24 месяца · Капитализация</div>
                 <button
                   onClick={() => { setSelectedDeposit(1); setPage("deposits"); }}
                   className="w-full py-3 rounded-2xl bg-emerald-400 text-black font-bold text-sm active:scale-95"
@@ -170,8 +170,8 @@ export default function Index() {
               <div className="space-y-3">
                 {[
                   { step: "01", title: "Выберите вклад", desc: "Подберите условия под ваши цели и сумму", icon: "MousePointerClick" },
-                  { step: "02", title: "Заполните заявку", desc: "Паспорт и телефон — этого достаточно", icon: "FileText" },
-                  { step: "03", title: "Получайте доход", desc: "Проценты начисляются автоматически", icon: "Coins" },
+                  { step: "02", title: "Переведите USDT", desc: "TRC-20 или ERC-20 — на ваш выбор", icon: "ArrowUpRight" },
+                  { step: "03", title: "Получайте доход", desc: "Проценты начисляются в USDT автоматически", icon: "Coins" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-4 glass-card rounded-2xl p-4">
                     <div className="shrink-0 w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
@@ -219,7 +219,7 @@ export default function Index() {
                   </div>
                   <div className="font-semibold text-white text-lg mb-1">{d.name}</div>
                   <div className="text-muted-foreground text-xs mb-4">
-                    от {d.minAmount.toLocaleString("ru")} ₽ · {d.term}
+                    от {d.minAmount.toLocaleString("ru")} USDT · {d.term}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {d.features.map((f, fi) => (
@@ -246,20 +246,20 @@ export default function Index() {
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Сумма вклада</span>
-                  <span className="font-semibold text-white">{calcAmount.toLocaleString("ru")} ₽</span>
+                  <span className="font-semibold text-white">{calcAmount.toLocaleString("ru")} USDT</span>
                 </div>
                 <input
                   type="range"
-                  min={10000}
-                  max={5000000}
-                  step={10000}
+                  min={100}
+                  max={50000}
+                  step={100}
                   value={calcAmount}
                   onChange={(e) => setCalcAmount(+e.target.value)}
                   className="w-full accent-emerald-400"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>10 000 ₽</span>
-                  <span>5 000 000 ₽</span>
+                  <span>100 USDT</span>
+                  <span>50 000 USDT</span>
                 </div>
               </div>
 
@@ -286,11 +286,11 @@ export default function Index() {
               <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-muted-foreground">Доход</span>
-                  <span className="font-display font-black text-xl neon-text">+{income.toLocaleString("ru")} ₽</span>
+                  <span className="font-display font-black text-xl neon-text">+{income.toLocaleString("ru")} USDT</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Итого</span>
-                  <span className="font-bold text-white text-lg">{total.toLocaleString("ru")} ₽</span>
+                  <span className="font-bold text-white text-lg">{total.toLocaleString("ru")} USDT</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-2">
                   По вкладу «{deposits[selectedDeposit].name}» · {deposits[selectedDeposit].rate}% годовых
