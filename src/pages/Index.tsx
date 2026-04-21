@@ -1,7 +1,16 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
+const AUTH_URL = "https://functions.poehali.dev/73cb23fb-72fa-4df1-9156-0acecaa2a7c6";
+
 type Page = "home" | "deposits" | "support";
+type AuthView = "login" | "register";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 export default function Index() {
   const [page, setPage] = useState<Page>("home");
@@ -11,6 +20,59 @@ export default function Index() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [supportForm, setSupportForm] = useState({ name: "", phone: "", message: "" });
   const [formSent, setFormSent] = useState(false);
+
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [authView, setAuthView] = useState<AuthView>("login");
+  const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const callAuth = async (action: string, payload: object) => {
+    const res = await fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    return res.json();
+  };
+
+  const handleRegister = async () => {
+    setAuthError("");
+    setAuthLoading(true);
+    const data = await callAuth("register", {
+      name: authForm.name,
+      email: authForm.email,
+      password: authForm.password,
+    });
+    setAuthLoading(false);
+    if (data.error) { setAuthError(data.error); return; }
+    localStorage.setItem("token", data.token);
+    setUser(data.user);
+    setShowAuth(false);
+    setAuthForm({ name: "", email: "", password: "" });
+  };
+
+  const handleLogin = async () => {
+    setAuthError("");
+    setAuthLoading(true);
+    const data = await callAuth("login", {
+      email: authForm.email,
+      password: authForm.password,
+    });
+    setAuthLoading(false);
+    if (data.error) { setAuthError(data.error); return; }
+    localStorage.setItem("token", data.token);
+    setUser(data.user);
+    setShowAuth(false);
+    setAuthForm({ name: "", email: "", password: "" });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+  };
 
   const deposits = [
     {
@@ -68,6 +130,102 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+
+      {/* Auth Modal */}
+      {showAuth && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowAuth(false)} />
+          <div className="relative w-full max-w-sm mx-4 mb-4 sm:mb-0 glass-card rounded-3xl p-6 border border-white/10 animate-slide-up">
+            {/* Close */}
+            <button onClick={() => setShowAuth(false)} className="absolute top-4 right-4 text-muted-foreground">
+              <Icon name="X" size={20} />
+            </button>
+
+            {/* Logo */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+                <Icon name="Banknote" size={16} className="text-black" />
+              </div>
+              <span className="font-display font-black text-base text-white">Вклад<span className="neon-text">Про</span></span>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-1 p-1 rounded-2xl bg-white/5 mb-5">
+              {(["login", "register"] as AuthView[]).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => { setAuthView(v); setAuthError(""); }}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
+                    authView === v ? "bg-emerald-400 text-black" : "text-muted-foreground"
+                  }`}
+                >
+                  {v === "login" ? "Войти" : "Регистрация"}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              {authView === "register" && (
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Ваше имя</label>
+                  <input
+                    type="text"
+                    value={authForm.name}
+                    onChange={(e) => setAuthForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Иван Иванов"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500/50 transition-colors"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
+                <input
+                  type="email"
+                  value={authForm.email}
+                  onChange={(e) => setAuthForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="example@mail.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500/50 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Пароль</label>
+                <input
+                  type="password"
+                  value={authForm.password}
+                  onChange={(e) => setAuthForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder="Минимум 6 символов"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500/50 transition-colors"
+                />
+              </div>
+            </div>
+
+            {authError && (
+              <div className="mt-3 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                {authError}
+              </div>
+            )}
+
+            <button
+              onClick={authView === "register" ? handleRegister : handleLogin}
+              disabled={authLoading}
+              className="w-full py-3.5 mt-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-black font-bold text-sm active:scale-95 transition-all disabled:opacity-60"
+            >
+              {authLoading ? "Загрузка..." : authView === "register" ? "Создать аккаунт" : "Войти"}
+            </button>
+
+            <p className="text-center text-xs text-muted-foreground mt-3">
+              {authView === "login" ? "Нет аккаунта? " : "Уже есть аккаунт? "}
+              <button
+                onClick={() => { setAuthView(authView === "login" ? "register" : "login"); setAuthError(""); }}
+                className="text-emerald-400 font-medium"
+              >
+                {authView === "login" ? "Зарегистрироваться" : "Войти"}
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-40 glass-card border-b border-white/5 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -78,9 +236,28 @@ export default function Index() {
             Вклад<span className="neon-text">Про</span>
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="text-xs text-muted-foreground">Лицензия ЦБ РФ</div>
-          <div className="w-2 h-2 rounded-full bg-emerald-400 pulse-glow" />
+        <div className="flex items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card border border-emerald-500/20">
+                <div className="w-5 h-5 rounded-full bg-emerald-400 flex items-center justify-center">
+                  <span className="text-[10px] font-black text-black">{user.name[0].toUpperCase()}</span>
+                </div>
+                <span className="text-xs text-white font-medium">{user.name.split(" ")[0]}</span>
+              </div>
+              <button onClick={handleLogout} className="text-muted-foreground">
+                <Icon name="LogOut" size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setShowAuth(true); setAuthView("login"); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-400 text-black text-xs font-bold"
+            >
+              <Icon name="User" size={13} />
+              Войти
+            </button>
+          )}
         </div>
       </header>
 
